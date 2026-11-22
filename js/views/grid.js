@@ -68,5 +68,5 @@ export function gridView(root, { cells, onDone, onPause }) {
   }
 
   render();
-  return bindRatebar(screen, { onRate, onUndo, onPause });
+  return bindRatebar(screen, { onRate, onUndo, onPause: () => onPause({ done: idx, total: cells.length }) });
 }

@@ -113,7 +113,7 @@ export function syllablesView(root, { words, onDone, onPause }) {
       marks = new Set(h.marks);
       render();
     },
-    onPause,
+    onPause: () => onPause({ done: i, total: words.length }),
   });
 
   render();

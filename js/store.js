@@ -13,6 +13,8 @@ export function defaultSettings() {
     distractorShare: 0.4,
     unitsPerChapter: 3,
     fluentMs: 2000,
+    weakShare: 0.6, // an Tagen mit schwacher Tagesform: Anteil der Felder pro Einheit
+    wordsPerUnit: 6,
     sound: true,
   };
 }

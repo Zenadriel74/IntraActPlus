@@ -4,7 +4,7 @@ import { show } from "./ui/dom.js";
 import { say, stop as stopAudio } from "./ui/audio.js";
 import { state, save, today, dayRecord } from "./store.js";
 import { rate, seedFromPlacement, entry, VALUE, countSure } from "./learning.js";
-import { buildGrid, pickWords, wordsUnlocked, selectCheckItems, formFromCheck, placementQueue, elementText } from "./planner.js";
+import { buildGrid, pickWords, wordsUnlocked, todaysForm, selectCheckItems, formFromCheck, placementQueue, elementText } from "./planner.js";
 import { gridView } from "./views/grid.js";
 import { sequenceView } from "./views/sequence.js";
 import { syllablesView } from "./views/syllables.js";
@@ -197,10 +197,18 @@ function runUnit() {
   const s = state.settings;
   const syllableTurn = j.totalUnits % 3 === 2 && wordsUnlocked();
   if (syllableTurn) {
-    show(syllablesView, { words: pickWords(6), onDone: unitDone, onPause: home });
+    const n = todaysForm() === "schwach" ? 4 : s.wordsPerUnit || 6;
+    show(syllablesView, { words: pickWords(n), onDone: unitDone, onPause: pauseUnit });
   } else {
-    show(gridView, { cells: buildGrid(s), onDone: unitDone, onPause: home });
+    show(gridView, { cells: buildGrid(s), onDone: unitDone, onPause: pauseUnit });
   }
+}
+
+// Pause mitten in einer Einheit: Ab der Hälfte zählt die Einheit als geschafft,
+// damit ein vorzeitiges Aufhören nie "umsonst" ist. Davor geht es einfach zur Startseite.
+function pauseUnit(p) {
+  if (p && p.total > 0 && p.done >= Math.ceil(p.total / 2)) unitDone();
+  else home();
 }
 
 function unitDone() {

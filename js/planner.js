@@ -61,8 +61,14 @@ export function pickNew(n, { ignoreLimit = false } = {}) {
 
 // Raster zusammenstellen. Ergebnis: Liste von Feldern
 // { type: "el", id } oder { type: "shape", shape, color }
-export function buildGrid({ rows, cols, distractorShare } = state.settings) {
-  const total = rows * cols;
+// Felder pro Einheit für heute: an schwachen Tagen kürzer (Einstellung "weakShare").
+export function unitSize(settings = state.settings, form = todaysForm()) {
+  const full = settings.rows * settings.cols;
+  if (form !== "schwach") return full;
+  return Math.max(6, Math.round(full * (settings.weakShare ?? 0.6)));
+}
+
+export function buildGrid({ distractorShare } = state.settings, total = unitSize()) {
   const nD = Math.min(total - 2, Math.round(total * distractorShare));
   const nL = total - nD;
   const t = today();
