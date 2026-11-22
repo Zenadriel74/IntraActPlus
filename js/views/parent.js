@@ -1,8 +1,8 @@
 // Elternbereich: Einstellungen, Lernstand, Verlauf, Flaggen, Daten.
 
-import { el, esc } from "../ui/dom.js";
+import { el, esc, ask } from "../ui/dom.js";
 import { ICON } from "../ui/icons.js";
-import { state, save, exportText, importText, resetState, today, defaultState } from "../store.js";
+import { state, save, exportText, importText, resetState, today, defaultState, dayRecord } from "../store.js";
 import { entry, status, countSure } from "../learning.js";
 import { ELEMENTS, CATEGORIES } from "../../data/elements.js";
 import { HISTORIC } from "../../data/historic.js";
@@ -57,6 +57,7 @@ const FIELDS = [
   { key: "rows", label: "Zeilen im Raster", min: 2, max: 6, step: 1, fmt: (v) => v },
   { key: "cols", label: "Spalten im Raster", min: 2, max: 7, step: 1, fmt: (v) => v },
   { key: "distractorShare", label: "Anteil Zwischenreize", min: 0, max: 0.6, step: 0.05, fmt: (v) => Math.round(v * 100) + " %" },
+  { key: "weakShare", label: "Einheit an schwachen Tagen", min: 0.3, max: 1, step: 0.1, fmt: (v) => `${Math.round(v * 100)} % (${Math.max(6, Math.round(state.settings.rows * state.settings.cols * v))} Felder)` },
   { key: "unitsPerChapter", label: "Einheiten pro Kapitel", min: 1, max: 8, step: 1, fmt: (v) => v },
   { key: "fluentMs", label: "Zeitgrenze flüssig / langsam", min: 1000, max: 6000, step: 500, fmt: (v) => (v / 1000).toLocaleString("de-DE") + " s" },
 ];
@@ -72,19 +73,34 @@ function settings(panel) {
   ).join("");
   panel.append(
     el(`<div>
-      <p class="hint">Raster: ${s.rows} × ${s.cols} = ${s.rows * s.cols} Felder, davon etwa ${Math.round(s.rows * s.cols * s.distractorShare)} Zwischenreize.
+      <p class="hint">Raster: ${s.rows} × ${s.cols} = ${s.rows * s.cols} Felder, davon etwa ${Math.round(s.rows * s.cols * s.distractorShare)} Zwischenreize. An Tagen mit schwacher Tagesform ist eine Einheit kürzer.
+      Hörst du mitten in einer Einheit auf (Haus-Knopf), zählt sie ab der Hälfte als geschafft.
       Die Zeitgrenze ist nur eine Zusatzinformation im Lernstand. Maßgeblich ist deine Bewertung.</p>
       ${rows}
       <label class="field check"><span>Ton (Sprüche)</span><input type="checkbox" data-key="sound" ${s.sound ? "checked" : ""}><output></output></label>
       <p class="hint">Am PC kannst du auch mit der Tastatur bewerten: 1 = flüssig, 2 = langsam, 3 = weiß nicht, Rücktaste = zurück.</p>
+      <h3>Tagesform heute</h3>
+      <p class="hint">Kommt aus dem Tagescheck. Du kannst sie hier ändern, z. B. wenn Sebastian müde ist:
+      schwach = kürzere Einheiten und nichts Neues, normal = ein neues Element pro Einheit, gut = bis zu zwei.</p>
+      <div class="formpick">${["schwach", "normal", "gut"].map((f) => `<button data-form="${f}" class="${state.days[today()]?.form === f ? "active" : ""}">${FORM[f]}</button>`).join("")}</div>
       <h3>Eingangstest</h3>
       <p class="hint">${placementStatus()}</p>
       <button class="big small-big retest">Eingangstest neu starten</button>
       <p class="hint retest-msg"></p>
     </div>`)
   );
-  panel.querySelector(".retest").addEventListener("click", () => {
-    if (restartPlacement()) panel.querySelector(".retest-msg").textContent = "Der Eingangstest startet beim nächsten Tippen auf „Los geht's“.";
+  panel.querySelector(".formpick").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-form]");
+    if (!b) return;
+    const day = dayRecord();
+    day.form = b.dataset.form;
+    if (!day.check) day.check = "von Hand gesetzt";
+    if (state.check?.date === today()) state.check = null; // laufenden Tagescheck nicht mehr nötig
+    save();
+    panel.querySelectorAll(".formpick button").forEach((x) => x.classList.toggle("active", x === b));
+  });
+  panel.querySelector(".retest").addEventListener("click", async () => {
+    if (await restartPlacement()) panel.querySelector(".retest-msg").textContent = "Der Eingangstest startet beim nächsten Tippen auf „Los geht's“.";
   });
   panel.addEventListener("input", (e) => {
     const inp = e.target.closest("input[data-key]");
@@ -97,7 +113,8 @@ function settings(panel) {
     }
     save();
     const hint = panel.querySelector(".hint");
-    hint.firstChild.textContent = `Raster: ${s.rows} × ${s.cols} = ${s.rows * s.cols} Felder, davon etwa ${Math.round(s.rows * s.cols * s.distractorShare)} Zwischenreize.
+    hint.firstChild.textContent = `Raster: ${s.rows} × ${s.cols} = ${s.rows * s.cols} Felder, davon etwa ${Math.round(s.rows * s.cols * s.distractorShare)} Zwischenreize. An Tagen mit schwacher Tagesform ist eine Einheit kürzer.
+      Hörst du mitten in einer Einheit auf (Haus-Knopf), zählt sie ab der Hälfte als geschafft.
       Die Zeitgrenze ist nur eine Zusatzinformation im Lernstand. Maßgeblich ist deine Bewertung.`;
   });
 }
@@ -109,8 +126,9 @@ function placementStatus() {
   return "Noch nicht gemacht. Er startet beim nächsten Tippen auf „Los geht's“.";
 }
 
-function restartPlacement() {
-  if (!confirm("Eingangstest neu starten? Die Testergebnisse setzen dann neue Startwerte. Flaggen und Verlauf bleiben erhalten.")) return false;
+async function restartPlacement() {
+  const ok = await ask("Eingangstest neu starten? Die Testergebnisse setzen dann neue Startwerte. Flaggen und Verlauf bleiben erhalten.", { yes: "Neu starten" });
+  if (!ok) return false;
   state.placement = defaultState().placement;
   state.check = null;
   save();
@@ -280,7 +298,8 @@ function data(panel, rerender) {
   panel.querySelector(".imp input").addEventListener("change", async (e) => {
     const f = e.target.files[0];
     if (!f) return;
-    if (!confirm("Der aktuelle Lernstand auf diesem Gerät wird durch die Datei ersetzt. Fortfahren?")) return;
+    e.target.value = ""; // dieselbe Datei später erneut wählbar
+    if (!(await ask("Der aktuelle Lernstand auf diesem Gerät wird durch die Datei ersetzt. Fortfahren?", { yes: "Ersetzen" }))) return;
     try {
       importText(await f.text());
       msg.textContent = "Import erfolgreich.";
@@ -288,13 +307,13 @@ function data(panel, rerender) {
       msg.textContent = err.message;
     }
   });
-  panel.querySelector(".retest").addEventListener("click", () => {
-    if (restartPlacement()) msg.textContent = "Der Eingangstest startet beim nächsten Tippen auf „Los geht's“.";
+  panel.querySelector(".retest").addEventListener("click", async () => {
+    if (await restartPlacement()) msg.textContent = "Der Eingangstest startet beim nächsten Tippen auf „Los geht's“.";
   });
-  panel.querySelector(".reset").addEventListener("click", () => {
-    if (!confirm("Wirklich ALLES zurücksetzen? Lernstand, Verlauf und Flaggen gehen verloren.")) return;
-    if (!confirm("Ganz sicher? Das kann nicht rückgängig gemacht werden (außer mit einem Export).")) return;
+  panel.querySelector(".reset").addEventListener("click", async () => {
+    if (!(await ask("Wirklich ALLES zurücksetzen? Lernstand, Verlauf und Flaggen gehen verloren.", { yes: "Weiter", danger: true }))) return;
+    if (!(await ask("Ganz sicher? Das kann nicht rückgängig gemacht werden, außer du hast vorher exportiert.", { yes: "Alles zurücksetzen", danger: true }))) return;
     resetState();
-    msg.textContent = "Zurückgesetzt.";
+    msg.textContent = "Zurückgesetzt. Beim nächsten „Los geht's“ beginnt der Eingangstest.";
   });
 }

@@ -36,6 +36,30 @@ export function show(render, opts = {}) {
   cleanup = typeof c === "function" ? c : null;
 }
 
+// Eigene Sicherheitsabfrage. Das Browser-Fenster confirm() wird in manchen
+// Browsern und installierten Apps unterdrückt und liefert dann sofort "Nein".
+export function ask(text, { yes = "Ja", no = "Abbrechen", danger = false } = {}) {
+  return new Promise((resolve) => {
+    const dlg = el(`<div class="overlay confirm" role="dialog" aria-modal="true">
+        <div class="confirm-box">
+          <p>${esc(text)}</p>
+          <div class="actions">
+            <button class="big ${danger ? "danger" : "primary"}" data-v="1">${esc(yes)}</button>
+            <button class="big" data-v="0">${esc(no)}</button>
+          </div>
+        </div>
+      </div>`);
+    dlg.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-v]");
+      if (!b) return;
+      dlg.remove();
+      resolve(b.dataset.v === "1");
+    });
+    document.body.append(dlg);
+    dlg.querySelector("button[data-v='0']").focus();
+  });
+}
+
 // Gedrückt halten (z. B. Zugang zum Elternbereich)
 export function longPress(btn, ms, done) {
   let timer = null;

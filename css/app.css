@@ -320,6 +320,10 @@ h1, h2, h3, p { margin: 0; }
   z-index: 10;
 }
 .overlay .big { flex: none; padding: .3em 1.4em; }
+.overlay.confirm { align-items: center; justify-content: center; background: rgba(42, 39, 35, .35); z-index: 20; }
+.confirm-box { background: var(--surface); border-radius: 18px; padding: 22px; max-width: 30em; width: 100%; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 8px 30px rgba(0, 0, 0, .2); }
+.confirm-box p { font-size: 1.1rem; line-height: 1.45; }
+.confirm-box .actions .big { flex: 1; font-size: 1.1rem; min-height: 56px; }
 
 /* ---------- Elternbereich ---------- */
 
@@ -339,6 +343,9 @@ h1, h2, h3, p { margin: 0; }
   .field input[type="range"] { grid-column: 1 / -1; grid-row: 2; }
 }
 
+.formpick { display: flex; gap: 8px; }
+.formpick button { flex: 1; max-width: 10em; padding: .6em 1em; border-radius: 12px; font-size: 1rem; }
+.formpick button.active { background: var(--focus); color: #fff; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { padding: .3em .6em; border-radius: 10px; font-size: 1.05rem; min-width: 2.2em; text-align: center; display: inline-block; }
 .st-sicher { background: var(--st-sicher); color: var(--st-sicher-ink); }
