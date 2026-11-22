@@ -43,5 +43,7 @@ License 1.1) installiert, wird sie bevorzugt.
 
 ## Sprachausgabe (`audio/`)
 
-Die MP3-Dateien erzeugst du selbst mit ElevenLabs. Bitte beachte dabei die
-Nutzungsbedingungen von ElevenLabs für deinen Tarif.
+Die MP3-Dateien wurden mit ElevenLabs erzeugt (https://elevenlabs.io), Stimme
+„Sarah“. Bei Nutzung des kostenlosen Tarifs verlangt ElevenLabs eine Nennung
+von ElevenLabs und erlaubt nur nicht-kommerzielle Nutzung. Diese Nennung steht
+hier.

@@ -4,6 +4,11 @@ Lege die MP3-Dateien genau mit diesen Namen in diesen Ordner (`audio/`).
 Die App spielt bei jedem Anlass zufällig eine vorhandene Variante. Fehlt eine
 Datei, überspringt sie diese still. Fehlen alle, bleibt es einfach still.
 
+**Stand:** Alle 20 Dateien sind erzeugt, mit der ElevenLabs-Grundstimme „Sarah“
+(voice_id `EXAVITQu4vr4xnSDxMaL`), Modell `eleven_multilingual_v2`,
+Stabilität 0,7. Neu erzeugen: siehe README, Abschnitt „Sprüche mit ElevenLabs
+erzeugen“ (z. B. mit `--neu --nur weiter_2.mp3`).
+
 Tipp für ElevenLabs: ruhige, warme Stimme, nicht zu schnell, kein Hall.
 Die Sätze sind Vorschläge, du kannst sie frei ändern, nur der Dateiname zählt.
 
