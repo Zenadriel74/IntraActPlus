@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <!-- vereinfachte Zeichnung: Stern, Hammer und Sichel -->
+  <rect width="400" height="200" fill="#CC0000"/>
+  <polygon points="60,14 63.5,24.2 74.3,24.4 65.7,30.9 68.8,41.3 60,35 51.2,41.3 54.3,30.9 45.7,24.4 56.5,24.2" fill="none" stroke="#FFD700" stroke-width="2.2"/>
+  <g stroke="#FFD700" fill="none" stroke-linecap="round">
+    <path d="M73 52 A 24 24 0 1 1 42 86" stroke-width="7"/>
+    <line x1="45" y1="88" x2="34" y2="99" stroke-width="8"/>
+    <line x1="44" y1="58" x2="80" y2="96" stroke-width="7"/>
+  </g>
+  <rect x="34" y="48" width="26" height="11" fill="#FFD700" transform="rotate(-45 47 53.5)"/>
+</svg>
