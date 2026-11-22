@@ -13,6 +13,11 @@ Stand: 22.11.2026. Dieser Entwurf ist Schritt 1 aus dem Auftrag und wurde freige
 - **Freischaltung von Wörtern:** Die Bausteine eines Worts werden Silbe für Silbe ermittelt (so bekommt „Pin-gu-in“ kein „ng“).
 - **Undo:** Ein Zurück-Knopf nimmt die letzte Bewertung zurück, falls man sich vertippt.
 - **Bewertung am PC:** zusätzlich per Tastatur 1/2/3.
+- **Einzelfeld statt Blatt:** Im Raster, im Eingangstest und im Tagescheck ist immer nur ein Feld zu sehen (ersetzt die Schablone). Fortschritt als Punktreihe bzw. Balken.
+- **Eingangstest:** Erklärseite, Überschrift mit Teil 1 bis 3, Fortschrittsbalken, Abbruch nach 10 Minuten reiner Lesezeit. Keine Zwischenreize, damit er kurz bleibt.
+- **Tagescheck:** mit Zwischenreizen im eingestellten Anteil und eigener Erklärseite.
+- **Speicherstand Version 2:** Ältere oder unvollständige Stände werden erkannt, der Eingangstest startet dann neu.
+- **Silbenübung:** erst ab vier lesbaren mehrsilbigen Wörtern, höchstens ein einsilbiges Wort pro Übung.
 - **Schrift:** Verdana (großes I mit Querstrichen, unterscheidbar von l), Andika, falls installiert.
 
 ## Technik-Entscheidungen

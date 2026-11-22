@@ -29,15 +29,12 @@ Dann im Browser <http://localhost:8000> öffnen. Beenden mit Strg+C.
 3. Nach ein bis zwei Minuten ist die App erreichbar unter
    `https://zenadriel74.github.io/IntraActPlus/`.
 
-**Wichtig:** Das Repository ist privat. GitHub Pages für private Repositories
-gibt es nur mit einem bezahlten Konto (GitHub Pro). Ohne Pro musst du das
-Repository öffentlich machen (es enthält keine persönlichen Daten außer
-Sebastians Vornamen in Wortliste und Sprüchen). Alternativ legst du ein zweites,
-öffentliches Repository nur für die Seite an. Der Lernstand liegt nie auf
-GitHub, sondern nur im Browser des Geräts.
+GitHub Pages ist bereits eingerichtet. Der Lernstand liegt nie auf GitHub,
+sondern nur im Browser des jeweiligen Geräts.
 
 **Updates:** Nach jedem Push holt sich die App die neue Fassung beim nächsten
-Öffnen im Hintergrund. Sie ist dann beim übernächsten Öffnen aktiv. Wenn etwas
+Öffnen im Hintergrund. Sie ist dann beim übernächsten Öffnen aktiv. Zum
+Ausprobieren einer neuen Fassung die Seite also zweimal neu laden. Wenn etwas
 hängt, in `sw.js` die `VERSION` hochzählen (z. B. `"v2"`), dann wird der
 Offline-Speicher komplett erneuert.
 
@@ -53,9 +50,19 @@ ohne Internet. Hoch- und Querformat gehen beide.
 
 ## Bedienung kurz
 
-- **Los geht's:** Beim allerersten Mal kommt der Eingangstest (pausierbar,
-  höchstens etwa 10 Minuten), an jedem neuen Tag ein kurzer Tagescheck mit etwa
-  10 Elementen. Danach folgen die Einheiten.
+- **Los geht's:** Beim allerersten Mal kommt der **Eingangstest**. Eine
+  Erklärseite kündigt ihn an, oben steht „Eingangstest · Teil 1 von 3“ mit
+  einem Fortschrittsbalken. Er ist pausierbar und dauert höchstens etwa 10
+  Minuten (bis zu gut 100 Felder: Buchstaben, Bausteine, Wörter, ohne
+  Zwischenreize, damit er kurz bleibt). Ab dem nächsten Tag kommt beim ersten
+  „Los geht's“ des Tages der **Tagescheck**: 10 Elemente mit Zwischenreizen,
+  etwa 2 bis 3 Minuten, ebenfalls mit Erklärseite. Danach folgen die
+  Einheiten.
+- **Einheit, Kapitel, Flagge:** Eine Einheit hat 20 Felder (einstellbar), davon
+  40 % Zwischenreize. Danach kommt eine Zwischenseite mit „Weiter“ oder
+  „Pause“. Nach 3 Einheiten (einstellbar) ist ein Kapitel geschafft, die
+  Flagge des nächsten Landes erscheint, dann die Frage „Sollen wir
+  weitermachen?“.
 - **Raster:** Eine Einheit besteht aus 20 Feldern (einstellbar), angezeigt wird
   aber immer nur das aktuelle Feld, groß in der Mitte. Das ersetzt die
   Schablone mit dem Loch. Die kleinen Punkte am oberen Rand zeigen, wie weit
@@ -71,8 +78,11 @@ ohne Internet. Hoch- und Querformat gehen beide.
   sind): Sebastian tippt zwischen die Buchstaben, wo er trennen würde, dann auf
   „fertig“. Die App zeigt die Silben farbig, er liest, du bewertest.
 - **Elternbereich:** Zahnrad oben rechts **3 Sekunden gedrückt halten**.
-  Einstellungen, Lernstand, Verlauf, Freigabe historischer Flaggen, Export,
-  Import und Zurücksetzen.
+  Einstellungen (dort auch „Eingangstest neu starten“), Lernstand, Verlauf,
+  Freigabe historischer Flaggen, Export, Import und Zurücksetzen.
+- **Alte Speicherstände:** Erkennt die App einen Lernstand einer älteren
+  Fassung oder einen unvollständigen Stand, startet sie den Eingangstest neu.
+  Gesammelte Flaggen und Verlauf bleiben erhalten.
 
 ## Lernstand auf ein anderes Gerät übertragen
 
