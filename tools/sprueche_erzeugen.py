@@ -5,8 +5,10 @@ Liest die Tabelle in audio/SPRUECHE.md (Dateiname + Satz) und legt für jede
 noch fehlende Datei eine MP3 in audio/ an. Vorhandene Dateien bleiben
 unangetastet (außer mit --neu).
 
-Vorbereitung (einmalig, in PowerShell):
-    $env:ELEVENLABS_API_KEY = "dein-schlüssel"
+Vorbereitung (einmalig, in PowerShell), eine der beiden Möglichkeiten:
+    setx ELEVENLABS_API_KEY "dein-schlüssel"     (dauerhaft für deinen Windows-Benutzer)
+    $env:ELEVENLABS_API_KEY = "dein-schlüssel"   (nur für dieses Fenster)
+Oder den Schlüssel in die Datei tools/elevenlabs.key schreiben (wird nicht committet).
 
 Stimmen anzeigen:
     python tools/sprueche_erzeugen.py --stimmen
@@ -42,6 +44,23 @@ MODEL = "eleven_multilingual_v2"
 def lies_liste():
     rows = re.findall(r"^\|\s*`([a-z]+_\d+\.mp3)`\s*\|\s*(.+?)\s*\|\s*$", LIST.read_text(encoding="utf-8"), re.M)
     return [(f, satz) for f, satz in rows]
+
+
+def schluessel():
+    """Schlüssel aus Umgebungsvariable, Windows-Benutzerumgebung (setx) oder tools/elevenlabs.key."""
+    key = os.environ.get("ELEVENLABS_API_KEY", "").strip()
+    if not key and sys.platform == "win32":
+        try:
+            import winreg
+
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
+                key = str(winreg.QueryValueEx(k, "ELEVENLABS_API_KEY")[0]).strip()
+        except OSError:
+            key = ""
+    datei = Path(__file__).resolve().parent / "elevenlabs.key"
+    if not key and datei.exists():
+        key = datei.read_text(encoding="utf-8").strip()
+    return key
 
 
 def anfrage(pfad, key, daten=None):
@@ -85,9 +104,13 @@ def main():
         print(f"{len(offen)} Datei(en) würden erzeugt.")
         return
 
-    key = os.environ.get("ELEVENLABS_API_KEY")
+    key = schluessel()
     if not key:
-        sys.exit('Bitte zuerst den Schlüssel setzen:  $env:ELEVENLABS_API_KEY = "..."')
+        sys.exit(
+            "Kein ElevenLabs-Schlüssel gefunden. Einmalig in PowerShell:\n"
+            '    setx ELEVENLABS_API_KEY "dein-schlüssel"\n'
+            "(oder den Schlüssel in die Datei tools/elevenlabs.key schreiben, sie wird nicht committet)"
+        )
 
     if args.stimmen:
         daten = json.loads(anfrage("/voices", key))
