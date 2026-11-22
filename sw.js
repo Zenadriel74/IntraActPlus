@@ -1,7 +1,7 @@
 // Service Worker: legt alle Dateien für den Offline-Betrieb in den Cache.
 // Neue Fassungen kommen automatisch (siehe unten). VERSION hochzählen leert den Cache ganz.
 
-const VERSION = "v1";
+const VERSION = "v3";
 const CACHE = `flaggenreise-${VERSION}`;
 
 const FILES = [
@@ -65,7 +65,14 @@ const FILES = [
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: "reload" holt jede Datei frisch vom Server, nicht aus dem Browser-Cache,
+  // damit nach einem Update keine alte Fassung im Offline-Speicher landet.
+  e.waitUntil(
+    caches
+      .open(CACHE)
+      .then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: "reload" }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {
@@ -85,7 +92,7 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const hit = await cache.match(e.request, { ignoreSearch: true });
-      const fresh = fetch(e.request)
+      const fresh = fetch(e.request, { cache: "no-cache" })
         .then((res) => {
           if (res.status === 200) cache.put(e.request, res.clone()).catch(() => {});
           return res;
