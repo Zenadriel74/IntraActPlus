@@ -30,7 +30,7 @@ export function parentView(root, { onClose }) {
       <div class="scroll panel"></div>
     </section>`);
   root.append(screen);
-  const panel = screen.querySelector(".panel");
+  let panel = screen.querySelector(".panel");
   screen.querySelector(".close").addEventListener("click", onClose);
   screen.querySelector(".tabs").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-tab]");
@@ -42,7 +42,10 @@ export function parentView(root, { onClose }) {
 
   function render() {
     screen.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
-    panel.innerHTML = "";
+    // neues Element, damit sich keine Ereignis-Handler der vorigen Reiter ansammeln
+    const fresh = panel.cloneNode(false);
+    panel.replaceWith(fresh);
+    panel = fresh;
     ({ settings, progress, history, flags, data })[tab](panel, render);
   }
   render();
@@ -74,8 +77,15 @@ function settings(panel) {
       ${rows}
       <label class="field check"><span>Ton (Sprüche)</span><input type="checkbox" data-key="sound" ${s.sound ? "checked" : ""}><output></output></label>
       <p class="hint">Am PC kannst du auch mit der Tastatur bewerten: 1 = flüssig, 2 = langsam, 3 = weiß nicht, Rücktaste = zurück.</p>
+      <h3>Eingangstest</h3>
+      <p class="hint">${placementStatus()}</p>
+      <button class="big small-big retest">Eingangstest neu starten</button>
+      <p class="hint retest-msg"></p>
     </div>`)
   );
+  panel.querySelector(".retest").addEventListener("click", () => {
+    if (restartPlacement()) panel.querySelector(".retest-msg").textContent = "Der Eingangstest startet beim nächsten Tippen auf „Los geht's“.";
+  });
   panel.addEventListener("input", (e) => {
     const inp = e.target.closest("input[data-key]");
     if (!inp) return;
@@ -90,6 +100,21 @@ function settings(panel) {
     hint.firstChild.textContent = `Raster: ${s.rows} × ${s.cols} = ${s.rows * s.cols} Felder, davon etwa ${Math.round(s.rows * s.cols * s.distractorShare)} Zwischenreize.
       Die Zeitgrenze ist nur eine Zusatzinformation im Lernstand. Maßgeblich ist deine Bewertung.`;
   });
+}
+
+function placementStatus() {
+  const p = state.placement;
+  if (p.done) return `Abgeschlossen am ${p.finished ? p.finished.split("-").reverse().join(".") : "?"}.`;
+  if (p.queue) return `Begonnen, aber noch nicht fertig (Teil ${Math.min(p.block + 1, 3)} von 3). Er geht beim nächsten Start weiter.`;
+  return "Noch nicht gemacht. Er startet beim nächsten Tippen auf „Los geht's“.";
+}
+
+function restartPlacement() {
+  if (!confirm("Eingangstest neu starten? Die Testergebnisse setzen dann neue Startwerte. Flaggen und Verlauf bleiben erhalten.")) return false;
+  state.placement = defaultState().placement;
+  state.check = null;
+  save();
+  return true;
 }
 
 // ---------- Lernstand ----------
@@ -264,10 +289,7 @@ function data(panel, rerender) {
     }
   });
   panel.querySelector(".retest").addEventListener("click", () => {
-    if (!confirm("Eingangstest beim nächsten Start neu machen? Die Testergebnisse setzen dann neue Startwerte.")) return;
-    state.placement = defaultState().placement;
-    save();
-    msg.textContent = "Der Eingangstest startet beim nächsten Mal.";
+    if (restartPlacement()) msg.textContent = "Der Eingangstest startet beim nächsten Tippen auf „Los geht's“.";
   });
   panel.querySelector(".reset").addEventListener("click", () => {
     if (!confirm("Wirklich ALLES zurücksetzen? Lernstand, Verlauf und Flaggen gehen verloren.")) return;

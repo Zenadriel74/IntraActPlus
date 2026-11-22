@@ -129,6 +129,26 @@ export function messageView(root, { text, onNext, onStop }) {
   stop?.addEventListener("click", onStop);
 }
 
+// ---------- Erklärseite (vor Eingangstest und Tagescheck, vor allem für dich) ----------
+
+export function introView(root, { title, paragraphs, note = "", startLabel = "Los geht's", onStart, onBack }) {
+  const screen = el(`<section class="screen">
+      <div class="intro">
+        <h2>${esc(title)}</h2>
+        ${paragraphs.map((p) => `<p>${esc(p)}</p>`).join("")}
+        ${note ? `<p class="small">${esc(note)}</p>` : ""}
+      </div>
+      <div class="actions">
+        <button class="big primary">${ICON.play}<span>${esc(startLabel)}</span></button>
+        <button class="big">${ICON.home}<span>Zurück</span></button>
+      </div>
+    </section>`);
+  root.append(screen);
+  const [start, back] = screen.querySelectorAll(".actions button");
+  start.addEventListener("click", onStart);
+  back.addEventListener("click", onBack);
+}
+
 // ---------- Album ----------
 
 export function albumView(root, { onBack }) {

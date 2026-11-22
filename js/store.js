@@ -1,7 +1,10 @@
 // Speichern und Laden des Lernstands (localStorage), Export und Import.
 
 const KEY = "leseapp.v1";
-export const VERSION = 1;
+// Version 2: Eingangstest mit Zeitgrenze, Tagescheck mit Zwischenreizen.
+// Ältere oder unvollständige Speicherstände werden beim Laden erkannt und
+// angepasst; der Eingangstest startet dann neu (Lernstand und Flaggen bleiben).
+export const VERSION = 2;
 
 export function defaultSettings() {
   return {
@@ -19,7 +22,7 @@ export function defaultState() {
     version: VERSION,
     created: today(),
     settings: defaultSettings(),
-    placement: { done: false, queue: null, block: 0, index: 0, streak: 0 },
+    placement: { done: false, queue: null, block: 0, index: 0, streak: 0, elapsed: 0 },
     check: null,
     items: {},
     words: {},
@@ -40,22 +43,41 @@ export function defaultState() {
 function normalize(s) {
   const d = defaultState();
   if (!s || typeof s !== "object") return d;
-  return {
+  const out = {
     ...d,
     ...s,
     settings: { ...d.settings, ...(s.settings || {}) },
     placement: { ...d.placement, ...(s.placement || {}) },
     journey: { ...d.journey, ...(s.journey || {}) },
-    items: s.items || {},
-    words: s.words || {},
-    days: s.days || {},
+    items: s.items && typeof s.items === "object" ? s.items : {},
+    words: s.words && typeof s.words === "object" ? s.words : {},
+    days: s.days && typeof s.days === "object" ? s.days : {},
   };
+  if (s.version !== VERSION || !placementValid(out.placement)) {
+    // alter oder unvollständiger Stand: Eingangstest neu starten
+    out.placement = d.placement;
+    out.check = null;
+    out.migratedFrom = s.version ?? "unbekannt";
+  }
+  if (out.check && (!Array.isArray(out.check.items) || typeof out.check.index !== "number")) out.check = null;
+  out.version = VERSION;
+  return out;
+}
+
+function placementValid(p) {
+  if (typeof p.done !== "boolean") return false;
+  if (p.queue === null) return !p.done;
+  return Array.isArray(p.queue) && p.queue.length === 3 && p.queue.every(Array.isArray) && (!p.done || !!p.finished);
 }
 
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return normalize(JSON.parse(raw));
+    if (raw) {
+      const st = normalize(JSON.parse(raw));
+      localStorage.setItem(KEY, JSON.stringify(st));
+      return st;
+    }
   } catch {
     /* kaputter Speicher: neu anfangen */
   }
@@ -79,7 +101,7 @@ export function snapshot() {
 }
 
 export function restore(snap) {
-  state = normalize(JSON.parse(snap));
+  state = JSON.parse(snap);
   save();
 }
 
@@ -99,7 +121,7 @@ export function importText(text) {
   } catch {
     throw new Error("Die Datei ist keine gültige JSON-Datei.");
   }
-  if (!obj || obj.version !== VERSION || typeof obj.items !== "object") {
+  if (!obj || typeof obj.version !== "number" || obj.version > VERSION || typeof obj.items !== "object") {
     throw new Error("Die Datei enthält keinen Lernstand dieser App.");
   }
   delete obj.app;

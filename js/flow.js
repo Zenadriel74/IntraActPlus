@@ -8,7 +8,8 @@ import { buildGrid, pickWords, wordsUnlocked, selectCheckItems, formFromCheck, p
 import { gridView } from "./views/grid.js";
 import { sequenceView } from "./views/sequence.js";
 import { syllablesView } from "./views/syllables.js";
-import { homeView, betweenView, flagView, askView, journeyDoneView, messageView, albumView, currentJourney } from "./views/screens.js";
+import { homeView, betweenView, flagView, askView, journeyDoneView, messageView, albumView, introView, currentJourney } from "./views/screens.js";
+import { makeDistractor } from "./ui/shapes.js";
 import { parentView } from "./views/parent.js";
 import { HISTORIC } from "../data/historic.js";
 
@@ -32,16 +33,45 @@ function next() {
 
 // ---------- Eingangstest ----------
 
+const PLACEMENT_LIMIT_MS = 10 * 60 * 1000; // höchstens etwa 10 Minuten reine Lesezeit
+const BLOCK_NAMES = ["Buchstaben", "Bausteine", "Wörter"];
+
 function runPlacement() {
   const p = state.placement;
-  if (!p.queue) {
-    Object.assign(p, { queue: placementQueue(), block: 0, index: 0, streak: 0 });
+  const fresh = !p.queue;
+  if (fresh) {
+    Object.assign(p, { queue: placementQueue(), block: 0, index: 0, streak: 0, elapsed: 0 });
     save();
   }
+  const total = p.queue.reduce((n, q) => n + q.length, 0);
+  show(introView, {
+    title: fresh || (p.block === 0 && p.index === 0) ? "Eingangstest" : "Eingangstest fortsetzen",
+    paragraphs: [
+      "Bevor die Reise beginnt, schauen wir einmal, was Sebastian schon kann.",
+      `Es kommen nacheinander ${BLOCK_NAMES.join(", ")}, immer nur eins auf einmal (insgesamt höchstens ${total}). Du bewertest wie später im Raster mit Delfin, Schildkröte oder Fragezeichen.`,
+      "Ein Teil endet von selbst nach viermal „weiß nicht“ in Folge. Nach spätestens etwa 10 Minuten ist der Test vorbei.",
+    ],
+    note: "Mit dem Haus-Knopf kannst du jederzeit pausieren, beim nächsten Mal geht es an derselben Stelle weiter. Im Test gibt es keine Zwischenreize, damit er kurz bleibt.",
+    startLabel: fresh || (p.block === 0 && p.index === 0) ? "Test starten" : "Weitermachen",
+    onStart: placementRun,
+    onBack: home,
+  });
+}
+
+function placementRun() {
   show(sequenceView, {
-    note: "Eingangstest: Buchstaben, dann Bausteine, dann Wörter. Jederzeit pausierbar.",
+    label() {
+      const pl = state.placement;
+      return `Eingangstest · Teil ${Math.min(pl.block + 1, 3)} von 3: ${BLOCK_NAMES[Math.min(pl.block, 2)]}`;
+    },
+    progress() {
+      const pl = state.placement;
+      const q = pl.queue[Math.min(pl.block, pl.queue.length - 1)];
+      return { done: pl.index, total: q.length };
+    },
     current() {
       const pl = state.placement;
+      if ((pl.elapsed || 0) >= PLACEMENT_LIMIT_MS) return null;
       while (pl.block < pl.queue.length) {
         const q = pl.queue[pl.block];
         if (pl.index < q.length) {
@@ -58,10 +88,11 @@ function runPlacement() {
     onRate(item, r, ms) {
       const pl = state.placement;
       seedFromPlacement(item.kind, item.id, r, ms);
+      pl.elapsed = (pl.elapsed || 0) + Math.min(ms, 20000); // lange Pausen nicht mitzählen
       pl.streak = r === "dk" ? pl.streak + 1 : 0;
       pl.index += 1;
       if (pl.streak >= 4) {
-        // Block nach 4 × "weiß nicht" in Folge beenden
+        // Teil nach 4 × "weiß nicht" in Folge beenden
         pl.block += 1;
         pl.index = 0;
         pl.streak = 0;
@@ -71,11 +102,11 @@ function runPlacement() {
       state.placement.done = true;
       state.placement.finished = today();
       const day = dayRecord();
-      day.form = day.form || "normal";
+      day.form = day.form || "normal"; // am Testtag kein Tagescheck mehr
       day.check = "Eingangstest";
       day.sure = countSure();
       save();
-      show(messageView, { text: "Super, das war's schon!", onNext: runUnit, onStop: home });
+      show(messageView, { text: "Super, das war's schon! Jetzt geht die Reise los.", onNext: runUnit, onStop: home });
     },
     onPause: home,
   });
@@ -92,21 +123,59 @@ function runDailyCheck() {
       save();
       return runUnit();
     }
-    state.check = { date: t, items, index: 0, results: [] };
+    state.check = { date: t, items: withShapes(items), index: 0, results: [] };
     save();
   }
+  const c = state.check;
+  const n = c.items.filter((x) => x.kind !== "shape").length;
+  show(introView, {
+    title: "Kurzer Tagescheck",
+    paragraphs: [
+      `Zum Aufwärmen ${n} bekannte und neue Elemente mit Zwischenreizen, etwa 2 bis 3 Minuten.`,
+      "Daraus stellt die App die Aufgaben für heute zusammen. Ein schlechter Tag ändert den Lernstand nur wenig.",
+    ],
+    startLabel: c.index > 0 ? "Weitermachen" : "Los geht's",
+    onStart: checkRun,
+    onBack: home,
+  });
+}
+
+// Zwischenreize zwischen die Elemente des Tageschecks, wie im Raster
+function withShapes(items) {
+  const share = state.settings.distractorShare;
+  const out = [];
+  let prev = null;
+  let debt = 0;
+  items.forEach((it, i) => {
+    out.push(it);
+    debt += share / (1 - share || 1);
+    while (debt >= 1 && i < items.length - 1) {
+      prev = makeDistractor(prev);
+      out.push({ kind: "shape", ...prev });
+      debt -= 1;
+    }
+  });
+  return out;
+}
+
+function checkRun() {
+  const t = today();
   show(sequenceView, {
+    label: () => "Tagescheck",
+    progress: () => ({ done: state.check?.index ?? 0, total: state.check?.items.length ?? 1 }),
     current() {
       const c = state.check;
-      const it = c.items[c.index];
-      return it ? { ...it, text: elementText(it.kind, it.id) } : null;
+      const it = c?.items[c.index];
+      if (!it) return null;
+      return it.kind === "shape" ? it : { ...it, text: elementText(it.kind, it.id) };
     },
     onRate(item, r, ms) {
       const c = state.check;
+      c.index += 1;
+      if (item.kind === "shape") return;
       const exp = entry(item.kind, item.id)?.score ?? 0;
       rate(item.kind, item.id, r, ms, { mode: "check" });
       c.results.push({ kind: item.kind, id: item.id, r, v: VALUE[r], exp: Math.round(exp * 100) / 100 });
-      c.index += 1;
     },
     onDone() {
       const c = state.check;
