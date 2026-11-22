@@ -25,7 +25,8 @@ export function sequenceView(root, { current, onRate, onDone, onPause, note = ""
       return;
     }
     txt.textContent = item.text;
-    txt.style.setProperty("--f", fitFactor(item.text, 60, 170));
+    txt.style.setProperty("--f", fitFactor(item.text, 62, 170));
+    txt.style.setProperty("--len", item.text.length);
     t0 = performance.now();
   }
 

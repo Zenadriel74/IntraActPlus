@@ -130,7 +130,7 @@ function runUnit() {
   if (syllableTurn) {
     show(syllablesView, { words: pickWords(6), onDone: unitDone, onPause: home });
   } else {
-    show(gridView, { cells: buildGrid(s), rows: s.rows, cols: s.cols, onDone: unitDone, onPause: home });
+    show(gridView, { cells: buildGrid(s), onDone: unitDone, onPause: home });
   }
 }
 

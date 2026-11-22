@@ -1,4 +1,6 @@
-// Das Raster: Lernelemente und Zwischenreize, aktuelles Feld hervorgehoben.
+// Eine Einheit ("Raster"): intern eine Folge von Feldern (Lernelemente und
+// Zwischenreize), angezeigt wird aber immer nur das aktuelle Feld, groß und
+// mittig. Das ersetzt die Schablone mit dem Loch aus dem Papierverfahren.
 
 import { el, esc, fitFactor } from "../ui/dom.js";
 import { shapeSVG } from "../ui/shapes.js";
@@ -8,35 +10,36 @@ import { save, snapshot, restore } from "../store.js";
 import { scheduleRetry } from "../planner.js";
 import { ratebarHTML, bindRatebar } from "./ratebar.js";
 
-export function gridView(root, { cells, rows, cols, onDone, onPause }) {
+export function gridView(root, { cells, onDone, onPause }) {
   cells = cells.map((c) => ({ ...c }));
   let idx = 0;
   let t0 = performance.now();
   const history = [];
 
   const screen = el(`<section class="screen work">
-      <div class="stage"><div class="grid"></div></div>
+      <div class="stage">
+        <div class="dots progress" aria-hidden="true"></div>
+        <div class="card"></div>
+      </div>
       ${ratebarHTML()}
     </section>`);
   root.append(screen);
-  const grid = screen.querySelector(".grid");
-
-  function layout() {
-    const portrait = innerHeight > innerWidth;
-    // Im Hochformat werden Zeilen und Spalten getauscht, damit die Felder nicht zu schmal werden.
-    grid.style.setProperty("--cols", portrait && cols > rows ? rows : cols);
-  }
-
-  function cellHTML(c, i) {
-    const cls = i === idx ? "current" : i < idx ? "done" : "";
-    if (c.type === "shape") return `<div class="cell shape ${cls}">${shapeSVG(c.shape, c.color)}</div>`;
-    const text = BY_ID[c.id]?.text ?? c.id;
-    return `<div class="cell ${cls}"><span class="txt" style="--f:${fitFactor(text)}">${esc(text)}</span></div>`;
-  }
+  const card = screen.querySelector(".card");
+  const dots = screen.querySelector(".progress");
 
   function render() {
-    grid.innerHTML = cells.map(cellHTML).join("");
-    t0 = performance.now();
+    const c = cells[idx];
+    if (c.type === "shape") {
+      card.className = "card shape";
+      card.innerHTML = shapeSVG(c.shape, c.color);
+    } else {
+      const text = BY_ID[c.id]?.text ?? c.id;
+      card.className = "card";
+      card.innerHTML = `<span class="txt" style="--f:${fitFactor(text, 62, 170)};--len:${text.length}">${esc(text)}</span>`;
+    }
+    // Fortschritt: nur Punkte, keine Inhalte der anderen Felder
+    dots.innerHTML = cells.map((_, i) => `<span class="dot ${i < idx ? "on" : i === idx ? "now" : ""}"></span>`).join("");
+    t0 = performance.now(); // Zeitmessung ab Erscheinen des Feldes
   }
 
   function onRate(r) {
@@ -53,6 +56,8 @@ export function gridView(root, { cells, rows, cols, onDone, onPause }) {
     else render();
   }
 
+  // Zurück: voriges Feld wieder zeigen, seine Bewertung (und eine dadurch
+  // eingeplante Wiederholung) zurücknehmen.
   function onUndo() {
     const h = history.pop();
     if (!h) return;
@@ -62,12 +67,6 @@ export function gridView(root, { cells, rows, cols, onDone, onPause }) {
     render();
   }
 
-  layout();
   render();
-  addEventListener("resize", layout);
-  const unbind = bindRatebar(screen, { onRate, onUndo, onPause });
-  return () => {
-    unbind();
-    removeEventListener("resize", layout);
-  };
+  return bindRatebar(screen, { onRate, onUndo, onPause });
 }

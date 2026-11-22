@@ -56,12 +56,15 @@ ohne Internet. Hoch- und Querformat gehen beide.
 - **Los geht's:** Beim allerersten Mal kommt der Eingangstest (pausierbar,
   höchstens etwa 10 Minuten), an jedem neuen Tag ein kurzer Tagescheck mit etwa
   10 Elementen. Danach folgen die Einheiten.
-- **Raster:** Das blau umrandete Feld ist dran. Du bewertest mit den drei
-  großen Knöpfen. Bei den farbigen Formen sagt Sebastian Farbe und Form, dann
-  tippst du irgendeinen der drei Knöpfe. Bei „weiß nicht“ sagst du das Element
-  vor, es kommt 2 bis 4 Felder später noch einmal.
-- **Zurück-Pfeil** (unten bzw. rechts): nimmt die letzte Bewertung zurück, falls
-  du dich vertippt hast. **Haus:** Pause, zurück zur Startseite.
+- **Raster:** Eine Einheit besteht aus 20 Feldern (einstellbar), angezeigt wird
+  aber immer nur das aktuelle Feld, groß in der Mitte. Das ersetzt die
+  Schablone mit dem Loch. Die kleinen Punkte am oberen Rand zeigen, wie weit
+  die Einheit ist. Du bewertest mit den drei großen Knöpfen, dann erscheint
+  sofort das nächste Feld. Bei den farbigen Formen sagt Sebastian Farbe und
+  Form, dann tippst du irgendeinen der drei Knöpfe. Bei „weiß nicht“ sagst du
+  das Element vor, es kommt 2 bis 4 Felder später noch einmal.
+- **Zurück-Pfeil** (unten bzw. rechts): holt das vorige Feld wieder nach vorn
+  und nimmt seine Bewertung zurück. **Haus:** Pause, zurück zur Startseite.
 - **Am PC per Tastatur:** 1 = flüssig, 2 = langsam, 3 = weiß nicht,
   Rücktaste = zurück.
 - **Silbenübung** (jede dritte Einheit, sobald genug Wörter freigeschaltet
