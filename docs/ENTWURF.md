@@ -1,6 +1,19 @@
 # Entwurf: Projektstruktur und Datenmodell
 
-Stand: 22.11.2026. Dieser Entwurf ist Schritt 1 aus dem Auftrag. Gebaut wird erst nach Freigabe.
+Stand: 22.11.2026. Dieser Entwurf ist Schritt 1 aus dem Auftrag und wurde freigegeben.
+
+## Abweichungen beim Bau der ersten Version
+
+- **Fortschreibung:** Bei den ersten Bewertungen eines Elements zählt jede stärker (echter Mittelwert: 1/1, 1/2, 1/3 …), danach mit festem Gewicht 0,25. Sonst bräuchte ein Element, das Sebastian sofort flüssig liest, sechs Delfine, bis es sicher ist. Der Tagescheck bleibt bei 0,1.
+- **Eingangstest, „weiß nicht“:** Das Element gilt danach nicht als „in Einführung“, sondern bleibt neu. Sonst würden z. B. b, d, p und q gemeinsam in Einführung starten und die Ähnlichkeitsregel aushebeln.
+- **Höchstens 8 unsichere Elemente gleichzeitig:** Sind es mehr, kommen keine neuen dazu, bis gefestigt ist.
+- **Zweite Reise** „Hoch in den Norden“ (Litauen, Lettland, Estland, Finnland, Schweden, Norwegen, Färöer, Island, Irland, Vereinigtes Königreich), damit es nach der ersten Reise weitergeht. Danach beginnt wieder die erste.
+- **Länderdaten** stehen in `COUNTRIES`, die Reisen verweisen nur auf die Kürzel. Jedes Land hat einen Satz zum Erzählen (`fact`).
+- **Silben:** Sprechsilben wie in der Grundschule (E-sel, O-ma), bei ck und st wie in der aktuellen Rechtschreibung (Zu-cker, Kis-te).
+- **Freischaltung von Wörtern:** Die Bausteine eines Worts werden Silbe für Silbe ermittelt (so bekommt „Pin-gu-in“ kein „ng“).
+- **Undo:** Ein Zurück-Knopf nimmt die letzte Bewertung zurück, falls man sich vertippt.
+- **Bewertung am PC:** zusätzlich per Tastatur 1/2/3.
+- **Schrift:** Verdana (großes I mit Querstrichen, unterscheidbar von l), Andika, falls installiert.
 
 ## Technik-Entscheidungen
 
