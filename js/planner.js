@@ -172,8 +172,9 @@ export function scheduleRetry(cells, k) {
 
 // ---------- Wörter ----------
 
+// Silbenübung erst, wenn genug mehrsilbige Wörter lesbar sind (sonst gibt es nichts zu trennen)
 export function wordsUnlocked() {
-  return availableWords().length >= 4;
+  return availableWords().filter((w) => w.s.length >= 2).length >= 4;
 }
 
 export function pickWords(n = 6) {
@@ -181,7 +182,10 @@ export function pickWords(n = 6) {
   const t = today();
   const info = avail.map((w) => ({ w, e: entry("word", w.w) }));
   const unsure = info.filter((x) => x.e && x.e.seen > 0 && status(x.e) !== "sicher").sort((a, b) => a.e.score - b.e.score);
-  const fresh = shuffle(info.filter((x) => !x.e || x.e.seen === 0)).sort((a, b) => a.w.s.length - b.w.s.length || a.w.w.length - b.w.w.length);
+  // neue Wörter: zuerst kurze mehrsilbige, einsilbige erst am Ende
+  const fresh = shuffle(info.filter((x) => !x.e || x.e.seen === 0)).sort(
+    (a, b) => (a.w.s.length < 2) - (b.w.s.length < 2) || a.w.w.length - b.w.w.length
+  );
   const due = info.filter((x) => x.e && status(x.e) === "sicher" && (!x.e.due || x.e.due <= t));
   const sure = shuffle(info.filter((x) => x.e && status(x.e) === "sicher" && !due.includes(x)));
   const out = [];
@@ -194,12 +198,14 @@ export function pickWords(n = 6) {
       }
     }
   };
-  add(unsure, 3);
-  add(fresh.slice(0, 8), 3);
-  add(due, n);
-  add(fresh, n);
-  add(unsure, n);
-  add(sure, n);
+  // Silbenübung: vor allem mehrsilbige Wörter, höchstens ein einsilbiges
+  const multi = (list) => list.filter((x) => x.w.s.length >= 2);
+  const single = (list) => list.filter((x) => x.w.s.length < 2);
+  add(multi(unsure), 3);
+  add(multi(fresh).slice(0, 8), 3);
+  add([...multi(due), ...multi(fresh), ...multi(unsure), ...multi(sure)], n - 1 - out.length);
+  add(single([...unsure, ...fresh, ...due]), 1);
+  add([...unsure, ...fresh, ...due, ...sure], n);
   return shuffle(out);
 }
 
