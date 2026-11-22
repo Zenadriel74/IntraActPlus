@@ -1,7 +1,7 @@
 // Service Worker: legt alle Dateien für den Offline-Betrieb in den Cache.
 // Neue Fassungen kommen automatisch (siehe unten). VERSION hochzählen leert den Cache ganz.
 
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = `flaggenreise-${VERSION}`;
 
 const FILES = [

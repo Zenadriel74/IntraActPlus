@@ -59,7 +59,11 @@ ohne Internet. Hoch- und Querformat gehen beide.
   etwa 2 bis 3 Minuten, ebenfalls mit Erklärseite. Danach folgen die
   Einheiten.
 - **Einheit, Kapitel, Flagge:** Eine Einheit hat 20 Felder (einstellbar), davon
-  40 % Zwischenreize. Danach kommt eine Zwischenseite mit „Weiter“ oder
+  40 % Zwischenreize. An Tagen mit schwacher Tagesform ist sie kürzer
+  (Standard 60 %, also 12 Felder; einstellbar), die Silbenübung hat dann 4 statt
+  6 Wörter. Hörst du mitten in einer Einheit mit dem Haus-Knopf auf, zählt sie
+  ab der Hälfte als geschafft. Die Tagesform kannst du im Elternbereich unter
+  Einstellungen auch selbst setzen, z. B. wenn Sebastian müde ist. Danach kommt eine Zwischenseite mit „Weiter“ oder
   „Pause“. Nach 3 Einheiten (einstellbar) ist ein Kapitel geschafft, die
   Flagge des nächsten Landes erscheint, dann die Frage „Sollen wir
   weitermachen?“.
@@ -86,7 +90,10 @@ ohne Internet. Hoch- und Querformat gehen beide.
 
 ## Lernstand auf ein anderes Gerät übertragen
 
-Der Lernstand wird pro Gerät im Browser gespeichert. Im Elternbereich unter
+Der Lernstand wird pro Gerät **und pro Browser** gespeichert, nicht auf GitHub
+und nicht im Internet. Öffnet Sebastian die Seite auf einem anderen Gerät
+(oder in einem anderen Browser auf demselben Gerät), beginnt er dort von vorn
+mit dem Eingangstest. Im Elternbereich unter
 **Daten** → **Lernstand exportieren** eine JSON-Datei erzeugen, auf das andere
 Gerät bringen und dort **Lernstand importieren** wählen.
 
@@ -118,6 +125,25 @@ Datei `data/words.js` öffnen und eine Zeile nach diesem Muster ergänzen:
   neues Land braucht es außerdem eine Flagge `flags/<kürzel>.svg`.
 - `data/historic.js`: Vorschlagsliste der historischen Flaggen. Freigeben im
   Elternbereich unter **Flaggen**.
+
+## Sprüche mit ElevenLabs erzeugen
+
+Das Skript `tools/sprueche_erzeugen.py` liest die Sätze aus
+`audio/SPRUECHE.md` und erzeugt die fehlenden MP3-Dateien über die
+ElevenLabs-Schnittstelle. Du brauchst einen API-Schlüssel (ElevenLabs →
+Profil → API Keys) und die ID einer Stimme. Im Projektordner in PowerShell:
+
+```powershell
+$env:ELEVENLABS_API_KEY = "dein-schlüssel"
+python tools/sprueche_erzeugen.py --stimmen
+python tools/sprueche_erzeugen.py --probe
+python tools/sprueche_erzeugen.py --stimme <voice_id>
+```
+
+`--stimmen` listet die Stimmen deines Kontos, `--probe` zeigt nur, was erzeugt
+würde, `--nur start_1.mp3` erzeugt einzelne Dateien neu (zusammen mit `--neu`).
+Der Schlüssel steht nur in der Umgebungsvariable dieses PowerShell-Fensters
+und wird nirgends gespeichert. Danach die MP3s committen und pushen.
 
 ## Sprüche ergänzen
 
